@@ -1,0 +1,61 @@
+---
+spring:
+  application:
+    name: split-discovery-service
+
+server:
+  port: 20002
+  servlet:
+    context-path: /
+
+eureka:
+  client:
+    region: region-1
+    service-url:
+      defaultZone: ${eureka.client.service-url.primary}
+      primary: http://devd.split.co.in:20002/eureka/
+      secondary: http://devd.split.co.in:20002/eureka/
+    availability-zones:
+      region-1: primary, secondary
+    registerWithEureka: true
+    fetchRegistry: true
+    prefer-same-zone-eureka: true
+  server:
+    waitTimeInMsWhenSyncEmpty: 0
+    enableSelfPreservation: false
+  instance:
+    metadata-map:
+      zone: dev
+      management.context-path: ${server.servlet.context-path}
+    instance-id: ${spring.application.name}:${random.int}
+    leaseRenewalIntervalInSeconds: 120
+    leaseExpirationIntervalInSeconds: 240
+    nonSecurePortEnabled: true
+    securePortEnabled: false
+    home-page-url-path: /
+    secure-port: 20002
+    non-secure-port: 20002
+    status-check-url: https://${spring.cloud.client.hostname}:${server.port}${server.servlet.context-path}/info
+    home-page-url: https://${spring.cloud.client.hostname}:${server.port}${server.servlet.context-path}
+    secureHealthCheckUrl: https://${spring.cloud.client.hostname}:${server.port}${server.servlet.context-path}/health
+
+management:
+  endpoints:
+    health:
+      show-details: ALWAYS
+    web:
+      exposure:
+        include: 'health,info'
+      base-path: /
+      path-mapping.health: health
+  server:
+    servlet:
+      context-path: ${server.servlet.context-path}
+  health.ldap.enabled: false
+  metrics:
+    web:
+      server:
+        auto-time-requests: true
+    distribution:
+      percentiles[http.server.requests]: 1
+      percentiles-histogram[http.server.requests]: true
